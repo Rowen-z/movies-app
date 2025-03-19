@@ -1,3 +1,6 @@
+import java.util.Properties
+import java.io.FileInputStream
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -5,6 +8,10 @@ plugins {
     id("com.google.devtools.ksp")
     //    id("com.google.gms.google-services")
 }
+
+val apikeyPropertiesFile = rootProject.file("apikey.properties")
+val apikeyProperties = Properties()
+apikeyProperties.load(FileInputStream(apikeyPropertiesFile))
 
 android {
     namespace = "com.example.level5task2"
@@ -16,6 +23,9 @@ android {
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"
+
+        buildFeatures.buildConfig = true
+        buildConfigField("String", "TMDB_API_KEY", apikeyProperties["TMDB_API_KEY"] as String)
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -36,6 +46,7 @@ android {
     kotlinOptions {
         jvmTarget = "11"
     }
+    buildToolsVersion = "35.0.0"
     buildFeatures {
         compose = true
     }
