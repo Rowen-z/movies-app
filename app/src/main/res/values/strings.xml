@@ -1,3 +1,8 @@
 <resources>
     <string name="app_name">Movies</string>
+
+    <string name="search_movie_hint">Search for a movie by name</string>
+    <string name="loading_text">Loading…</string>
+    <string name="empty_movies_list">No movies found.</string>
+    <string name="something_wrong_state">Something went wrong.</string>
 </resources>
