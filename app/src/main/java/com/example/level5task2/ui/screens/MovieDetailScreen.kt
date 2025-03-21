@@ -3,13 +3,20 @@ package com.example.level5task2.ui.screens
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.ThumbUp
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -18,6 +25,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -38,6 +46,14 @@ fun MovieDetailScreen(nc: NavController, vm: MoviesViewModel) {
                         text = stringResource(id = R.string.app_name)
                     )
                 },
+                navigationIcon = {
+                    IconButton(onClick = {nc.popBackStack()}) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Back"
+                        )
+                    }
+                },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primary,
                     titleContentColor = MaterialTheme.colorScheme.onPrimary
@@ -57,7 +73,7 @@ private fun ScreenContent(modifier: Modifier, vm: MoviesViewModel, nc: NavContro
         return
     }
 
-    Column(modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
+    Column(modifier = Modifier.fillMaxSize()) {
         Text(text = movie.title, style = MaterialTheme.typography.headlineMedium)
         Image(
             painter = rememberAsyncImagePainter("https://image.tmdb.org/t/p/w500${movie.backdropPath}"),
@@ -91,11 +107,51 @@ private fun ScreenContent(modifier: Modifier, vm: MoviesViewModel, nc: NavContro
                     modifier = Modifier.padding(bottom = 8.dp),
                     textAlign = TextAlign.Center
                 )
+                Spacer(Modifier.height(8.dp))
                 Text(
                     text = "Release: ${movie.releaseDate}",
                     style = MaterialTheme.typography.bodyMedium
                 )
+                Spacer(Modifier.height(8.dp))
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.Star,
+                        contentDescription = "Rating Star",
+                        modifier = Modifier.size(20.dp),
+                        tint = Color.Black
+                    )
+                    Text(
+                        text = "${movie.voteAverage}",
+                        style = MaterialTheme.typography.bodyMedium,
+                        modifier = Modifier.padding(end = 8.dp)
+                    )
+                }
             }
         }
+
+        Spacer(modifier = Modifier.height(16.dp))
+        Text(
+            text = stringResource(R.string.overview),
+            style = MaterialTheme.typography.headlineSmall,
+            modifier = Modifier.padding(start = 16.dp, end = 16.dp)
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        Text(
+            text = movie.overview,
+            style = MaterialTheme.typography.bodyMedium,
+            modifier = Modifier.padding(start = 16.dp, end = 16.dp)
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+        Text(
+            text = stringResource(R.string.currently_not_favorite)
+        )
+        Icon(
+            imageVector = Icons.Filled.ThumbUp,
+            contentDescription = "Thumbs up",
+            modifier = Modifier.size(30.dp),
+            tint = Color.Red
+        )
     }
 }

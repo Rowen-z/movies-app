@@ -5,4 +5,7 @@
     <string name="loading_text">Loading…</string>
     <string name="empty_movies_list">No movies found.</string>
     <string name="something_wrong_state">Something went wrong.</string>
+    <string name="overview">Overview</string>
+    <string name="currently_not_favorite">Currently not favorite. Favorize:</string>
+    <string name="currently_favorite">Currently favorite. Unfavorize:</string>
 </resources>
