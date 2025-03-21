@@ -79,8 +79,6 @@ fun MoviesSearchScreen(nc: NavController, vm: MoviesViewModel) {
 @Composable
 private fun ScreenContent(modifier: Modifier, vm: MoviesViewModel, nc: NavController) {
     var query by remember { mutableStateOf("") }
-    var page by remember { mutableIntStateOf(1) }
-    var movies by remember { mutableStateOf<List<Movie>>(emptyList()) }
 
     Column(
         modifier
@@ -90,9 +88,7 @@ private fun ScreenContent(modifier: Modifier, vm: MoviesViewModel, nc: NavContro
     ) {
         SearchView { newQuery ->
             query = newQuery
-            page = 1
-            movies = emptyList()
-            vm.getMovies(newQuery, page)
+            vm.getMovies(newQuery)
         }
 
         val moviesResource: Resource<MoviesResponse> by vm.moviesResource.observeAsState(Resource.Empty())
@@ -100,15 +96,14 @@ private fun ScreenContent(modifier: Modifier, vm: MoviesViewModel, nc: NavContro
         when (moviesResource) {
             is Resource.Success -> {
                 val newMovies = moviesResource.data?.movies ?: emptyList()
-                if (page == 1) {
-                    movies = newMovies
-                } else {
-                    movies = movies + newMovies
-                }
+
+                vm.addMovies(newMovies)
+
+                val movies = vm.readMovies()
 
                 MovieGrid(movies, nc, vm, onLoadMore = {
-                    page++
-                    vm.getMovies(query, page)
+                    vm.setPage(vm.readPage() + 1)
+                    vm.getMovies(query, vm.readPage())
                 })
             }
 
