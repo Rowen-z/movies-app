@@ -18,11 +18,11 @@ class MoviesViewModel(application: Application): AndroidViewModel(application) {
     val moviesResource: LiveData<Resource<MoviesResponse>>
         get() = _moviesResource
 
-    fun getMovies(query: String) {
+    fun getMovies(query: String, page: Int = 1) {
         _moviesResource.value = Resource.Loading()
 
         viewModelScope.launch {
-            _moviesResource.value = _moviesRepository.getMovies(query)
+            _moviesResource.value = _moviesRepository.getMovies(query, page)
         }
     }
 }

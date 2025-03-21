@@ -1,11 +1,18 @@
 package com.example.level5task2.ui.screens
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
@@ -23,6 +30,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -31,6 +39,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -38,8 +48,13 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import coil.compose.rememberAsyncImagePainter
+import coil.request.CachePolicy
+import coil.request.ImageRequest
 import com.example.level5task2.R
+import com.example.level5task2.data.api.MoviesApi
 import com.example.level5task2.data.api.util.Resource
+import com.example.level5task2.data.model.Movie
 import com.example.level5task2.data.model.MoviesResponse
 import com.example.level5task2.viewmodel.MoviesViewModel
 
@@ -67,27 +82,37 @@ fun MoviesSearchScreen(nc: NavController, vm: MoviesViewModel) {
 @Composable
 private fun ScreenContent(modifier: Modifier, vm: MoviesViewModel) {
     var query by remember { mutableStateOf("") }
+    var page by remember { mutableIntStateOf(1) }
+    var movies by remember { mutableStateOf<List<Movie>>(emptyList()) }
 
     Column(
         modifier
-            .fillMaxHeight(),
-        horizontalAlignment = Alignment.Start
+            .fillMaxHeight()
+            .fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
         SearchView { newQuery ->
             query = newQuery
-            vm.getMovies(newQuery)
+            page = 1
+            movies = emptyList()
+            vm.getMovies(newQuery, page)
         }
 
         val moviesResource: Resource<MoviesResponse> by vm.moviesResource.observeAsState(Resource.Empty())
 
         when (moviesResource) {
             is Resource.Success -> {
-                val movies = moviesResource.data?.movies ?: emptyList()
-                LazyColumn {
-                    items(movies) { movie ->
-                        Text(text = movie.title, modifier = Modifier.padding(8.dp))
-                    }
+                val newMovies = moviesResource.data?.movies ?: emptyList()
+                if (page == 1) {
+                    movies = newMovies
+                } else {
+                    movies = movies + newMovies
                 }
+
+                MovieGrid(movies, onLoadMore = {
+                    page++
+                    vm.getMovies(query, page)
+                })
             }
 
             is Resource.Error -> {
@@ -103,11 +128,49 @@ private fun ScreenContent(modifier: Modifier, vm: MoviesViewModel) {
             is Resource.Empty -> {
                 Text(
                     text = stringResource(R.string.empty_movies_list),
-                    modifier = Modifier.padding(16.dp)
+                    modifier = Modifier.padding(16.dp),
                 )
             }
         }
     }
+}
+
+@Composable
+fun MovieGrid(movies: List<Movie>, onLoadMore: () -> Unit) {
+    val gridState = rememberLazyGridState()
+
+    LazyVerticalGrid(
+        columns = GridCells.Fixed(3),
+        state = gridState,
+        contentPadding = PaddingValues(0.dp),
+        modifier = Modifier.fillMaxSize()
+    ) {
+        items(movies.size) { index ->
+            MovieItem(movies[index])
+
+            if (index == movies.lastIndex) {
+                onLoadMore()
+            }
+        }
+    }
+}
+
+@Composable
+fun MovieItem(movie: Movie) {
+    val imageUrl = movie.posterPath.let { "https://image.tmdb.org/t/p/w500$it" }
+
+    val imageRequest = ImageRequest.Builder(LocalContext.current)
+        .data(imageUrl)
+        .memoryCachePolicy(CachePolicy.ENABLED)
+        .build()
+
+    Image(
+        painter = rememberAsyncImagePainter(imageRequest),
+        contentDescription = movie.title,
+        modifier = Modifier
+            .size(200.dp),
+        contentScale = ContentScale.Crop
+    )
 }
 
 @OptIn(ExperimentalComposeUiApi::class)
@@ -125,9 +188,7 @@ private fun SearchView(
         onValueChange = { value ->
             searchQueryState.value = value
         },
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(8.dp),
+        modifier = Modifier.fillMaxWidth(),
         textStyle = TextStyle(fontSize = 18.sp),
         leadingIcon = {
             if (searchQueryState.value != TextFieldValue(String())) {

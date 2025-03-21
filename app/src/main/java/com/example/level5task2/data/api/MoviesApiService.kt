@@ -5,11 +5,11 @@ import retrofit2.http.GET
 import retrofit2.http.Query
 
 interface MoviesApiService {
-    @GET("search/movie")
+    @GET("3/search/movie")
     suspend fun getMovies(
         @Query("query") query: String,
+        @Query("page") page: Int,
         @Query("include_adult") includeAdult: Boolean = false,
-        @Query("language") language: String = "en-US",
-        @Query("page") page: Int = 1
+        @Query("language") language: String = "en-US"
     ): MoviesResponse
 }

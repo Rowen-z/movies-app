@@ -10,7 +10,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 class MoviesApi {
     companion object {
         // The base url off the api.
-        private const val baseUrl = "https://api.themoviedb.org/3/"
+        const val baseUrl = "https://api.themoviedb.org/"
 
         /**
          * @return [MoviesApiService] The service class off the retrofit client.

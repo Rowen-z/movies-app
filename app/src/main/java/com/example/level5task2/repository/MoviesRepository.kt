@@ -10,10 +10,10 @@ import kotlinx.coroutines.withTimeout
 class MoviesRepository {
     private val _moviesApiService: MoviesApiService = MoviesApi.createApi()
 
-    suspend fun getMovies(query: String): Resource<MoviesResponse> {
+    suspend fun getMovies(query: String, page: Int): Resource<MoviesResponse> {
         val response = try {
             withTimeout(5_000) {
-                _moviesApiService.getMovies(query)
+                _moviesApiService.getMovies(query, page)
             }
         } catch (e: Exception) {
             Log.e("MoviesRepository", e.message ?: "No exception message available")
