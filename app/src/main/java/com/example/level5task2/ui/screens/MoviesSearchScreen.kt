@@ -1,6 +1,7 @@
 package com.example.level5task2.ui.screens
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -8,12 +9,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
@@ -52,7 +50,6 @@ import coil.compose.rememberAsyncImagePainter
 import coil.request.CachePolicy
 import coil.request.ImageRequest
 import com.example.level5task2.R
-import com.example.level5task2.data.api.MoviesApi
 import com.example.level5task2.data.api.util.Resource
 import com.example.level5task2.data.model.Movie
 import com.example.level5task2.data.model.MoviesResponse
@@ -75,12 +72,12 @@ fun MoviesSearchScreen(nc: NavController, vm: MoviesViewModel) {
                 )
             )
         },
-        content = { innerPadding -> ScreenContent(Modifier.padding(innerPadding), vm) },
+        content = { innerPadding -> ScreenContent(Modifier.padding(innerPadding), vm, nc) },
     )
 }
 
 @Composable
-private fun ScreenContent(modifier: Modifier, vm: MoviesViewModel) {
+private fun ScreenContent(modifier: Modifier, vm: MoviesViewModel, nc: NavController) {
     var query by remember { mutableStateOf("") }
     var page by remember { mutableIntStateOf(1) }
     var movies by remember { mutableStateOf<List<Movie>>(emptyList()) }
@@ -109,7 +106,7 @@ private fun ScreenContent(modifier: Modifier, vm: MoviesViewModel) {
                     movies = movies + newMovies
                 }
 
-                MovieGrid(movies, onLoadMore = {
+                MovieGrid(movies, nc, vm, onLoadMore = {
                     page++
                     vm.getMovies(query, page)
                 })
@@ -136,7 +133,7 @@ private fun ScreenContent(modifier: Modifier, vm: MoviesViewModel) {
 }
 
 @Composable
-fun MovieGrid(movies: List<Movie>, onLoadMore: () -> Unit) {
+fun MovieGrid(movies: List<Movie>, nc: NavController, vm: MoviesViewModel, onLoadMore: () -> Unit) {
     val gridState = rememberLazyGridState()
 
     LazyVerticalGrid(
@@ -146,7 +143,10 @@ fun MovieGrid(movies: List<Movie>, onLoadMore: () -> Unit) {
         modifier = Modifier.fillMaxSize()
     ) {
         items(movies.size) { index ->
-            MovieItem(movies[index])
+            MovieItem(movie = movies[index], onMovieClick = {
+                vm.selectMovie(it)
+                nc.navigate(MoviesScreens.MovieDetailScreen.name)
+            })
 
             if (index == movies.lastIndex) {
                 onLoadMore()
@@ -156,7 +156,7 @@ fun MovieGrid(movies: List<Movie>, onLoadMore: () -> Unit) {
 }
 
 @Composable
-fun MovieItem(movie: Movie) {
+fun MovieItem(movie: Movie, onMovieClick: (Movie) -> Unit) {
     val imageUrl = movie.posterPath.let { "https://image.tmdb.org/t/p/w500$it" }
 
     val imageRequest = ImageRequest.Builder(LocalContext.current)
@@ -168,7 +168,8 @@ fun MovieItem(movie: Movie) {
         painter = rememberAsyncImagePainter(imageRequest),
         contentDescription = movie.title,
         modifier = Modifier
-            .size(200.dp),
+            .size(200.dp)
+            .clickable { onMovieClick(movie) },
         contentScale = ContentScale.Crop
     )
 }
