@@ -73,6 +73,8 @@ private fun ScreenContent(modifier: Modifier, vm: MoviesViewModel, nc: NavContro
         return
     }
 
+    val isFavorite = vm.isFavorite(movie.id)
+
     Column(modifier = Modifier.fillMaxSize()) {
         Text(text = movie.title, style = MaterialTheme.typography.headlineMedium)
         Image(
@@ -150,17 +152,23 @@ private fun ScreenContent(modifier: Modifier, vm: MoviesViewModel, nc: NavContro
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                text = stringResource(R.string.currently_not_favorite),
+                text = if (isFavorite) stringResource(R.string.currently_favorite) else stringResource(R.string.currently_not_favorite),
                 modifier = Modifier.padding(8.dp)
             )
             IconButton(
-                onClick = { vm.addMovieToFirestore(movie) }
+                onClick = {
+                    if (isFavorite) {
+                        vm.deleteFavoriteFromFirestore(movie.id)
+                    } else {
+                        vm.addMovieToFirestore(movie)
+                    }
+                }
             ) {
                 Icon(
                     imageVector = Icons.Filled.ThumbUp,
                     contentDescription = "Thumbs up",
                     modifier = Modifier.size(30.dp),
-                    tint = Color.Green,
+                    tint = if (isFavorite) Color.Green else Color.Black,
                 )
             }
         }

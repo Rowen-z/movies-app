@@ -25,6 +25,7 @@ class MoviesViewModel(application: Application): AndroidViewModel(application) {
     private val _movies = mutableStateOf<List<Movie>>(emptyList())
     private val _page = mutableIntStateOf(1)
     private val _selectedMovie = mutableStateOf<Movie?>(null)
+    private val _favoriteStatusMap = mutableStateOf<Map<Int, Boolean>>(emptyMap())
 
     val moviesResource: LiveData<Resource<MoviesResponse>>
         get() = _moviesResource
@@ -62,6 +63,8 @@ class MoviesViewModel(application: Application): AndroidViewModel(application) {
             _movieToFirestoreResource.value =
                 _moviesInFirestoreRepository.addFavoriteMovieToFirestore(movie)
         }
+
+        updateFavoriteStatus(movie.id, true)
     }
 
     fun getFavoritesFromFirestore() {
@@ -77,7 +80,7 @@ class MoviesViewModel(application: Application): AndroidViewModel(application) {
         viewModelScope.launch {
             val result = _moviesInFirestoreRepository.deleteFavoriteFromFirestore(movieId)
             if (result is Resource.Success) {
-                getFavoritesFromFirestore()
+                updateFavoriteStatus(movieId, false)
             }
             _movieToFirestoreResource.value = result
         }
@@ -103,5 +106,15 @@ class MoviesViewModel(application: Application): AndroidViewModel(application) {
 
     fun readSelectedMovie(): Movie? {
         return _selectedMovie.value
+    }
+
+    fun isFavorite(movieId: Int): Boolean {
+        return _favoriteStatusMap.value[movieId] == true
+    }
+
+    private fun updateFavoriteStatus(movieId: Int, isFavorite: Boolean) {
+        _favoriteStatusMap.value = _favoriteStatusMap.value.toMutableMap().apply {
+            put(movieId, isFavorite)
+        }
     }
 }
