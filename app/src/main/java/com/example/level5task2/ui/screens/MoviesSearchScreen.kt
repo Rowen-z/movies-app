@@ -101,6 +101,13 @@ private fun ScreenContent(modifier: Modifier, vm: MoviesViewModel, nc: NavContro
 
                 val movies = vm.readMovies()
 
+                if (movies.isEmpty()) {
+                    Text(
+                        text = stringResource(R.string.empty_movies_list),
+                        modifier = Modifier.padding(16.dp),
+                    )
+                }
+
                 MovieGrid(movies, nc, vm, onLoadMore = {
                     vm.setPage(vm.readPage() + 1)
                     vm.getMovies(query, vm.readPage())
@@ -109,7 +116,8 @@ private fun ScreenContent(modifier: Modifier, vm: MoviesViewModel, nc: NavContro
 
             is Resource.Error -> {
                 Text(
-                    text = moviesResource.message ?: stringResource(R.string.something_wrong_state)
+                    text = moviesResource.message ?: stringResource(R.string.something_wrong_state),
+                    modifier = Modifier.padding(16.dp)
                 )
             }
 
@@ -208,8 +216,6 @@ private fun SearchView(
             IconButton(onClick = {
                 searchTMDB(searchQueryState.value.text)
                 keyboardController?.hide()
-                //based on @ExperimentalComposeUiApi - if this doesn't work in a newer version remove it
-                //no alternative in compose for hiding keyboard at time of writing
             }) {
                 Icon(
                     Icons.Default.Search,
