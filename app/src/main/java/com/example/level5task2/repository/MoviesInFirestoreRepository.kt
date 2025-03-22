@@ -1,4 +1,5 @@
 package com.example.level5task2.repository
+import android.util.Log
 import com.example.level5task2.data.api.util.Resource
 import com.example.level5task2.data.model.Movie
 import com.google.firebase.firestore.FirebaseFirestore
@@ -40,23 +41,76 @@ class MoviesInFirestoreRepository {
         return Resource.Success("Success")
     }
 
-    suspend fun getFavoritesFromFirestore(): Resource<List<String>> {
-        val historyList = arrayListOf<String>()
+    suspend fun getFavoritesFromFirestore(): Resource<List<Movie>> {
         try {
-            withTimeout(5_000) {
+            val snapshot = withTimeout(5_000) {
                 _moviesDocument
-                    .get().addOnSuccessListener {
-                        for (document in it) {
-                            val text = document.getString("text")
-                            historyList.add(text!!)
-                        }
-                    }
+                    .get()
                     .await()
             }
-        } catch (e: Exception) {
-            return Resource.Error("An unknown error occured while retrieving movie data from Firestore.")
+
+            val movies = snapshot.documents.mapNotNull { document ->
+                val id = document.getLong("id")?.toInt() ?: 0
+                val title = document.getString("title") ?: ""
+                val originalTitle = document.getString("original_title") ?: ""
+                val overview = document.getString("overview") ?: ""
+                val posterPath = document.getString("poster_path") ?: ""
+                val backdropPath = document.getString("backdrop_path") ?: ""
+                val mediaType = document.getString("media_type") ?: ""
+                val adult = document.getBoolean("adult") ?: false
+                val originalLanguage = document.getString("original_language") ?: ""
+                val genreIds = document.get("genre_ids") as? List<Int> ?: emptyList()
+                val popularity = document.getDouble("popularity") ?: 0.0
+                val releaseDate = document.getString("release_date") ?: ""
+                val video = document.getBoolean("video") ?: false
+                val voteAverage = document.getDouble("vote_average") ?: 0.0
+                val voteCount = document.getLong("vote_count")?.toInt() ?: 0
+
+                Movie(
+                    id,
+                    title,
+                    originalTitle,
+                    overview,
+                    posterPath,
+                    backdropPath,
+                    mediaType,
+                    adult,
+                    originalLanguage,
+                    genreIds,
+                    popularity,
+                    releaseDate,
+                    video,
+                    voteAverage,
+                    voteCount
+                )
+            }
+            return Resource.Success(movies)
+        } catch(e: Exception) {
+            Log.e("FirestoreError", "Error occurred: ${e.message}", e)
+            return Resource.Error("An unknown error occured while retrieving the movies from Firestore.")
         }
-        return Resource.Success(historyList)
+    }
+
+    suspend fun deleteFavoriteFromFirestore(movieId: Int): Resource<String> {
+        return try {
+            withTimeout(5_000) {
+                val snapshot = _moviesDocument
+                    .whereEqualTo("id", movieId)
+                    .get()
+                    .await()
+
+                if (snapshot.isEmpty) {
+                    throw Exception("Movie not found in Firestore.")
+                }
+
+                for (document in snapshot.documents) {
+                    document.reference.delete().await()
+                }
+            }
+            Resource.Success("Movie deleted successfully")
+        } catch (e: Exception) {
+            Resource.Error("An error occurred while deleting the movie: ${e.message}")
+        }
     }
 
     suspend fun deleteFavorites(): Resource<String> {

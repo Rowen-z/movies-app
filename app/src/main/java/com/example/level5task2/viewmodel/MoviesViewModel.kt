@@ -19,7 +19,7 @@ class MoviesViewModel(application: Application): AndroidViewModel(application) {
     private val _moviesInFirestoreRepository = MoviesInFirestoreRepository()
 
     private val _moviesResource: MutableLiveData<Resource<MoviesResponse>> = MutableLiveData(Resource.Empty())
-    private val _moviesFromFirestoreResource: MutableLiveData<Resource<List<String>>> = MutableLiveData(Resource.Empty())
+    private val _moviesFromFirestoreResource: MutableLiveData<Resource<List<Movie>>> = MutableLiveData(Resource.Empty())
     private val _movieToFirestoreResource: MutableLiveData<Resource<String>> = MutableLiveData(Resource.Empty())
 
     private val _movies = mutableStateOf<List<Movie>>(emptyList())
@@ -29,7 +29,7 @@ class MoviesViewModel(application: Application): AndroidViewModel(application) {
     val moviesResource: LiveData<Resource<MoviesResponse>>
         get() = _moviesResource
 
-    val moviesFromFirestoreResource: LiveData<Resource<List<String>>>
+    val moviesFromFirestoreResource: LiveData<Resource<List<Movie>>>
         get() = _moviesFromFirestoreResource
 
     val movieToFirestoreResource: LiveData<Resource<String>>
@@ -70,6 +70,16 @@ class MoviesViewModel(application: Application): AndroidViewModel(application) {
         viewModelScope.launch {
             _moviesFromFirestoreResource.value =
                 _moviesInFirestoreRepository.getFavoritesFromFirestore()
+        }
+    }
+
+    fun deleteFavoriteFromFirestore(movieId: Int) {
+        viewModelScope.launch {
+            val result = _moviesInFirestoreRepository.deleteFavoriteFromFirestore(movieId)
+            if (result is Resource.Success) {
+                getFavoritesFromFirestore()
+            }
+            _movieToFirestoreResource.value = result
         }
     }
 

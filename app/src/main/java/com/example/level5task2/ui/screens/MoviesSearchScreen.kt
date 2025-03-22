@@ -4,6 +4,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -15,6 +16,7 @@ import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.ThumbUp
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -28,7 +30,6 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -86,10 +87,13 @@ private fun ScreenContent(modifier: Modifier, vm: MoviesViewModel, nc: NavContro
             .fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        SearchView { newQuery ->
-            query = newQuery
-            vm.getMovies(newQuery)
-        }
+        SearchView(
+            searchTMDB = { newQuery ->
+                query = newQuery
+                vm.getMovies(newQuery)
+            },
+            nc
+        )
 
         val moviesResource: Resource<MoviesResponse> by vm.moviesResource.observeAsState(Resource.Empty())
 
@@ -136,7 +140,7 @@ private fun ScreenContent(modifier: Modifier, vm: MoviesViewModel, nc: NavContro
 }
 
 @Composable
-fun MovieGrid(movies: List<Movie>, nc: NavController, vm: MoviesViewModel, onLoadMore: () -> Unit) {
+private fun MovieGrid(movies: List<Movie>, nc: NavController, vm: MoviesViewModel, onLoadMore: () -> Unit) {
     val gridState = rememberLazyGridState()
 
     LazyVerticalGrid(
@@ -159,7 +163,7 @@ fun MovieGrid(movies: List<Movie>, nc: NavController, vm: MoviesViewModel, onLoa
 }
 
 @Composable
-fun MovieItem(movie: Movie, onMovieClick: (Movie) -> Unit) {
+private fun MovieItem(movie: Movie, onMovieClick: (Movie) -> Unit) {
     val imageUrl = movie.posterPath.let { "https://image.tmdb.org/t/p/w500$it" }
 
     val imageRequest = ImageRequest.Builder(LocalContext.current)
@@ -180,7 +184,8 @@ fun MovieItem(movie: Movie, onMovieClick: (Movie) -> Unit) {
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 private fun SearchView(
-    searchTMDB: (String) -> Unit
+    searchTMDB: (String) -> Unit,
+    nc: NavController
 ) {
     val searchQueryState = rememberSaveable(stateSaver = TextFieldValue.Saver)  {
         mutableStateOf(TextFieldValue(String()))
@@ -213,17 +218,30 @@ private fun SearchView(
             }
         },
         trailingIcon = {
-            IconButton(onClick = {
-                searchTMDB(searchQueryState.value.text)
-                keyboardController?.hide()
-            }) {
-                Icon(
-                    Icons.Default.Search,
-                    contentDescription = "Search for  movies in TMDB based on search argument provided",
-                    modifier = Modifier
-                        .padding(8.dp)
-                        .size(24.dp),
-                )
+            Row {
+                IconButton(onClick = {
+                    searchTMDB(searchQueryState.value.text)
+                    keyboardController?.hide()
+                }) {
+                    Icon(
+                        Icons.Default.Search,
+                        contentDescription = "Search for  movies in TMDB based on search argument provided",
+                        modifier = Modifier
+                            .padding(8.dp)
+                            .size(24.dp),
+                    )
+                }
+                IconButton(onClick = {
+                   nc.navigate(MoviesScreens.MoviesFavoriteScreen.name)
+                }) {
+                    Icon(
+                        Icons.Filled.ThumbUp,
+                        contentDescription = "Favorites",
+                        modifier = Modifier
+                            .padding(8.dp)
+                            .size(24.dp),
+                    )
+                }
             }
         },
         placeholder = {
