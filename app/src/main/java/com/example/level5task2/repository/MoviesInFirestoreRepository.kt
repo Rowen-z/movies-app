@@ -10,7 +10,7 @@ class MoviesInFirestoreRepository {
     private val _moviesDocument =
         _firestore.collection("movies")
 
-    suspend fun addMovieToFirestore(movie: Movie): Resource<String> {
+    suspend fun addFavoriteMovieToFirestore(movie: Movie): Resource<String> {
         val data = hashMapOf(
             "id" to movie.id,
             "title" to movie.title,
@@ -40,7 +40,7 @@ class MoviesInFirestoreRepository {
         return Resource.Success("Success")
     }
 
-    suspend fun getHistoryFromFirestore(): Resource<List<String>> {
+    suspend fun getFavoritesFromFirestore(): Resource<List<String>> {
         val historyList = arrayListOf<String>()
         try {
             withTimeout(5_000) {
@@ -59,7 +59,7 @@ class MoviesInFirestoreRepository {
         return Resource.Success(historyList)
     }
 
-    suspend fun deleteHistory(): Resource<String> {
+    suspend fun deleteFavorites(): Resource<String> {
         try {
             withTimeout(5_000) {
                 _moviesDocument

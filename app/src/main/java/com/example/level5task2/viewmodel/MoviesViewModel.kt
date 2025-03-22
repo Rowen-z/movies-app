@@ -60,22 +60,22 @@ class MoviesViewModel(application: Application): AndroidViewModel(application) {
 
         viewModelScope.launch {
             _movieToFirestoreResource.value =
-                _moviesInFirestoreRepository.addMovieToFirestore(movie)
+                _moviesInFirestoreRepository.addFavoriteMovieToFirestore(movie)
         }
     }
 
-    fun getHistoryFromFirestore() {
+    fun getFavoritesFromFirestore() {
         _moviesFromFirestoreResource.value = Resource.Loading()
 
         viewModelScope.launch {
             _moviesFromFirestoreResource.value =
-                _moviesInFirestoreRepository.getHistoryFromFirestore()
+                _moviesInFirestoreRepository.getFavoritesFromFirestore()
         }
     }
 
-    fun deleteHistory() {
+    fun deleteFavorites() {
         viewModelScope.launch {
-            _moviesInFirestoreRepository.deleteHistory()
+            _moviesInFirestoreRepository.deleteFavorites()
         }
     }
 
