@@ -10,13 +10,17 @@ import androidx.lifecycle.viewModelScope
 import com.example.level5task2.data.api.util.Resource
 import com.example.level5task2.data.model.Movie
 import com.example.level5task2.data.model.MoviesResponse
+import com.example.level5task2.repository.MoviesInFirestoreRepository
 import com.example.level5task2.repository.MoviesRepository
 import kotlinx.coroutines.launch
 
 class MoviesViewModel(application: Application): AndroidViewModel(application) {
     private val _moviesRepository = MoviesRepository()
+    private val _moviesInFirestoreRepository = MoviesInFirestoreRepository()
 
     private val _moviesResource: MutableLiveData<Resource<MoviesResponse>> = MutableLiveData(Resource.Empty())
+    private val _moviesFromFirestoreResource: MutableLiveData<Resource<List<String>>> = MutableLiveData(Resource.Empty())
+    private val _movieToFirestoreResource: MutableLiveData<Resource<String>> = MutableLiveData(Resource.Empty())
 
     private val _movies = mutableStateOf<List<Movie>>(emptyList())
     private val _page = mutableIntStateOf(1)
@@ -25,12 +29,22 @@ class MoviesViewModel(application: Application): AndroidViewModel(application) {
     val moviesResource: LiveData<Resource<MoviesResponse>>
         get() = _moviesResource
 
+    val moviesFromFirestoreResource: LiveData<Resource<List<String>>>
+        get() = _moviesFromFirestoreResource
+
+    val movieToFirestoreResource: LiveData<Resource<String>>
+        get() = _movieToFirestoreResource
+
     fun getMovies(query: String, page: Int = 1) {
         _moviesResource.value = Resource.Loading()
 
         viewModelScope.launch {
             _moviesResource.value = _moviesRepository.getMovies(query, page)
         }
+    }
+
+    fun readMovies(): List<Movie> {
+        return _movies.value
     }
 
     fun addMovies(newMovies: List<Movie>) {
@@ -41,16 +55,36 @@ class MoviesViewModel(application: Application): AndroidViewModel(application) {
         }
     }
 
-    fun readMovies(): List<Movie> {
-        return _movies.value
+    fun addMovieToFirestore(movie: Movie) {
+        _movieToFirestoreResource.value = Resource.Loading()
+
+        viewModelScope.launch {
+            _movieToFirestoreResource.value =
+                _moviesInFirestoreRepository.addMovieToFirestore(movie)
+        }
     }
 
-    fun setPage(page: Int) {
-        _page.intValue = page
+    fun getHistoryFromFirestore() {
+        _moviesFromFirestoreResource.value = Resource.Loading()
+
+        viewModelScope.launch {
+            _moviesFromFirestoreResource.value =
+                _moviesInFirestoreRepository.getHistoryFromFirestore()
+        }
+    }
+
+    fun deleteHistory() {
+        viewModelScope.launch {
+            _moviesInFirestoreRepository.deleteHistory()
+        }
     }
 
     fun readPage(): Int {
         return _page.intValue
+    }
+
+    fun setPage(page: Int) {
+        _page.intValue = page
     }
 
     fun selectMovie(movie: Movie) {
