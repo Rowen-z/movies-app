@@ -36,6 +36,10 @@ class MoviesViewModel(application: Application): AndroidViewModel(application) {
     val movieToFirestoreResource: LiveData<Resource<String>>
         get() = _movieToFirestoreResource
 
+    init {
+        getFavoritesFromFirestore()
+    }
+
     fun getMovies(query: String, page: Int = 1) {
         _moviesResource.value = Resource.Loading()
 
@@ -73,6 +77,9 @@ class MoviesViewModel(application: Application): AndroidViewModel(application) {
         viewModelScope.launch {
             _moviesFromFirestoreResource.value =
                 _moviesInFirestoreRepository.getFavoritesFromFirestore()
+
+            val favorites = (_moviesFromFirestoreResource.value as? Resource.Success)?.data ?: emptyList()
+            _favoriteStatusMap.value = favorites.associateBy({ it.id }) { true }
         }
     }
 
@@ -112,7 +119,7 @@ class MoviesViewModel(application: Application): AndroidViewModel(application) {
         return _favoriteStatusMap.value[movieId] == true
     }
 
-    private fun updateFavoriteStatus(movieId: Int, isFavorite: Boolean) {
+    fun updateFavoriteStatus(movieId: Int, isFavorite: Boolean) {
         _favoriteStatusMap.value = _favoriteStatusMap.value.toMutableMap().apply {
             put(movieId, isFavorite)
         }

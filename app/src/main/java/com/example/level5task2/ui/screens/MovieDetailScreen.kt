@@ -159,6 +159,7 @@ private fun ScreenContent(modifier: Modifier, vm: MoviesViewModel, nc: NavContro
                 onClick = {
                     if (isFavorite) {
                         vm.deleteFavoriteFromFirestore(movie.id)
+                        vm.updateFavoriteStatus(movie.id, false)
                     } else {
                         vm.addMovieToFirestore(movie)
                     }
