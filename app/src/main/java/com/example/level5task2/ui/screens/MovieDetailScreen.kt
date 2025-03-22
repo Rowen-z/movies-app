@@ -144,14 +144,25 @@ private fun ScreenContent(modifier: Modifier, vm: MoviesViewModel, nc: NavContro
             modifier = Modifier.padding(start = 16.dp, end = 16.dp)
         )
         Spacer(modifier = Modifier.height(16.dp))
-        Text(
-            text = stringResource(R.string.currently_not_favorite)
-        )
-        Icon(
-            imageVector = Icons.Filled.ThumbUp,
-            contentDescription = "Thumbs up",
-            modifier = Modifier.size(30.dp),
-            tint = Color.Red
-        )
+
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                text = stringResource(R.string.currently_not_favorite),
+                modifier = Modifier.padding(8.dp)
+            )
+            IconButton(
+                onClick = { vm.addMovieToFirestore(movie) }
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.ThumbUp,
+                    contentDescription = "Thumbs up",
+                    modifier = Modifier.size(30.dp),
+                    tint = Color.Green,
+                )
+            }
+        }
     }
 }
