@@ -68,16 +68,19 @@ fun MovieDetailScreen(nc: NavController, vm: MoviesViewModel) {
 private fun ScreenContent(modifier: Modifier, vm: MoviesViewModel, nc: NavController) {
     val movie = vm.readSelectedMovie()
 
+    // If no movie is found, show a text with the something wrong state.
     if (movie == null) {
         Text(text = stringResource(R.string.something_wrong_state), modifier = Modifier.padding(16.dp))
         return
     }
 
+    // Check if the current movie is currently favorite (present in firestore).
     val isFavorite = vm.isFavorite(movie.id)
 
     Column(modifier = Modifier.fillMaxSize()) {
         Text(text = movie.title, style = MaterialTheme.typography.headlineMedium)
         Image(
+            // Movie backdrop image.
             painter = rememberAsyncImagePainter("https://image.tmdb.org/t/p/w500${movie.backdropPath}"),
             contentDescription = movie.title,
             modifier = Modifier
@@ -93,6 +96,7 @@ private fun ScreenContent(modifier: Modifier, vm: MoviesViewModel, nc: NavContro
             verticalAlignment = Alignment.CenterVertically
         ) {
             Image(
+                // Movie poster image.
                 painter = rememberAsyncImagePainter("https://image.tmdb.org/t/p/w500${movie.posterPath}"),
                 contentDescription = movie.title,
                 modifier = Modifier
@@ -134,6 +138,8 @@ private fun ScreenContent(modifier: Modifier, vm: MoviesViewModel, nc: NavContro
         }
 
         Spacer(modifier = Modifier.height(16.dp))
+
+        // Overview section.
         Text(
             text = stringResource(R.string.overview),
             style = MaterialTheme.typography.headlineSmall,
@@ -151,6 +157,7 @@ private fun ScreenContent(modifier: Modifier, vm: MoviesViewModel, nc: NavContro
             modifier = Modifier.fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            // Movie currently favorite section.
             Text(
                 text = if (isFavorite) stringResource(R.string.currently_favorite) else stringResource(R.string.currently_not_favorite),
                 modifier = Modifier.padding(8.dp)

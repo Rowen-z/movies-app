@@ -44,6 +44,7 @@ import com.example.level5task2.viewmodel.MoviesViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MoviesFavoriteScreen(nc: NavController, vm: MoviesViewModel) {
+    // When opening the screen, retrieve favorite movies from firestore.
     LaunchedEffect(Unit) {
         vm.getFavoritesFromFirestore()
     }

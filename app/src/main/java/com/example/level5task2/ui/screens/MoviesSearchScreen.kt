@@ -220,8 +220,12 @@ private fun SearchView(
         trailingIcon = {
             Row {
                 IconButton(onClick = {
-                    searchTMDB(searchQueryState.value.text)
-                    keyboardController?.hide()
+                    val query = searchQueryState.value.text.trim()
+                    if (query.isNotEmpty()) {
+                        // If search field is not empty, retrieve movies from the api.
+                        searchTMDB(searchQueryState.value.text)
+                        keyboardController?.hide()
+                    }
                 }) {
                     Icon(
                         Icons.Default.Search,
@@ -232,7 +236,8 @@ private fun SearchView(
                     )
                 }
                 IconButton(onClick = {
-                   nc.navigate(MoviesScreens.MoviesFavoriteScreen.name)
+                    // Navigate to the favorites screen when clicking on the thumbsup icon.
+                    nc.navigate(MoviesScreens.MoviesFavoriteScreen.name)
                 }) {
                     Icon(
                         Icons.Filled.ThumbUp,
