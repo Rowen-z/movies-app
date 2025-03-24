@@ -86,7 +86,6 @@ class MoviesInFirestoreRepository {
             }
             return Resource.Success(movies)
         } catch(e: Exception) {
-            Log.e("FirestoreError", "Error occurred: ${e.message}", e)
             return Resource.Error("An unknown error occured while retrieving the movies from Firestore.")
         }
     }
