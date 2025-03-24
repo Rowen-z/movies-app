@@ -69,7 +69,7 @@ private fun ScreenContent(modifier: Modifier, vm: MoviesViewModel, nc: NavContro
     val movie = vm.readSelectedMovie()
 
     if (movie == null) {
-        Text(text = "Geen film geselecteerd", modifier = Modifier.padding(16.dp))
+        Text(text = stringResource(R.string.something_wrong_state), modifier = Modifier.padding(16.dp))
         return
     }
 
